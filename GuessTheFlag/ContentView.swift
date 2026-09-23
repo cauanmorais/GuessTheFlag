@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var countries = ["Germany", "Ireland", "Nigeria", "US","UK", "Italy","Spain", "Monaco", "Poland"]
+    @State private var countries = ["Germany", "Ireland", "Nigeria", "US", "UK", "Italy", "Spain", "Monaco", "Poland", "Ukraine", "France", "Estonia"]
     @State private var correctAnswer = Int.random(in: 0...3)
     @State private var score = 0
-    @State private var actualTry = 1
+    @State private var currentRound = 1
     @State private var showingResetGameAlert = false
-    private let buttons: Range<Int> = 0..<4
-    private let maxTry = 5
+    
+    private let maxRounds = 5
     
     
     var body: some View {
@@ -28,24 +28,19 @@ struct ContentView: View {
                 
                 VStack(spacing: 20) {
                     VStack(alignment: .trailing) {
-                        Text("Round \(actualTry)/\(maxTry)")
+                        Text("Round \(currentRound)/\(maxRounds)")
                     }
+                    
                     Text("Guess the flag of: ")
                     
-                    Image(countries[correctAnswer])
-                        .scaledToFit()
+                    flagImage(for: countries[correctAnswer])
                     
                     ForEach(0..<4) { number in
                         Button(countries[number]) {
-                            if actualTry < maxTry {
-                                actualTry += 1
-                            } else {
-                                showingResetGameAlert = true
-                            }
-                            guessTheFlag(number)
+                            handleFlagTap(number)
                         }
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.glass)
                     .buttonSizing(.flexible)
                     .padding(.horizontal, 20)
                     
@@ -65,18 +60,40 @@ struct ContentView: View {
         }
     }
     
-    func guessTheFlag(_ number: Int) {
+    private func handleFlagTap(_ number: Int) {
         if number == correctAnswer {
             score += 1
         }
         
+        if currentRound < maxRounds {
+            currentRound += 1
+            askNextQuestion()
+        } else {
+            showingResetGameAlert = true
+        }
+    }
+    
+    func askNextQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...3)
     }
     
     func resetGame() {
         score = 0
-        actualTry = 0
+        currentRound = 1
+        askNextQuestion()
+    }
+    
+    var images: some View {
+        Image(countries[currentRound])
+            .frame(maxWidth: .infinity)
+    }
+}
+
+extension View {
+    func flagImage(for imageName: String) -> some View {
+        Image(imageName)
+            .scaledToFit()
     }
 }
 
